@@ -1,0 +1,29 @@
+<h1>Hello Open Liga DB</h1>
+
+<div style="color: red; font-weight: bold;">{{error}}</div>
+
+Saison:
+<select [(ngModel)]="selectedSeason">
+  <option *ngFor="let season of seasons" [ngValue]="season">{{season}}</option>
+</select>
+<br>
+test
+Team:
+<select [(ngModel)]="selectedTeam">
+  <option *ngFor="let team of teams" [ngValue]="team">{{team.TeamName}}</option>
+</select>
+
+<table>
+  <tr>
+    <td>Pos</td>
+    <td>Name</td>
+    <td>Goals</td>
+    <td>Points</td>
+  </tr>
+  <tr *ngFor="let team of teams; index as i;" class="even">
+    <td style="text-align: center;">{{i+1}}</td>
+    <td>{{team.TeamName}}</td>
+    <td>{{team.Goals}} : {{team.OpponentGoals}}</td>
+    <td style="text-align: center;">{{team.Points}}</td>
+  </tr>
+</table>
