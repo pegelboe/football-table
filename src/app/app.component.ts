@@ -1,13 +1,6 @@
-import { Component, OnInit, TestabilityRegistry } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Match, TeamInTable } from './open-liga-db.interfaces';
 import { OpenLigaDbService } from './open-liga-db.service';
-
-export interface Team {
-  TeamName: string;
-  Points: number;
-  Goals: number;
-  OpponentGoals: number;
-  TeamInfoId: number;
-}
 
 @Component({
   selector: 'app-root',
@@ -16,49 +9,54 @@ export interface Team {
 })
 
 export class AppComponent implements OnInit {
-  teams: Team[] = [];
-  selectedTeam = null;
+  teams: TeamInTable[] = [];
+  selectedTeam: TeamInTable = null;
   seasons: number[] = [];
-  selectedSeason = null;
+  selectedSeason: number = null;
+  listOfGamesFromSelectedTeam: Match[] = [];
   error: string = "";
 
   constructor(private ligaService: OpenLigaDbService) {}
 
   ngOnInit(): void {
-
     this.getSeasons();
 
     this.getTable(this.selectedSeason);
   }
 
   /**
-   * get table of last game day
+   * get all available seasons and select first one
    */
-   private getSeasons() {
+   private getSeasons(): void {
     this.seasons = this.ligaService.getSeasons();
 
     // select first available element
     if(this.selectedSeason == undefined && this.seasons.length > 0)
-        this.selectedSeason = this.seasons[0];
+      this.selectedSeason = this.seasons[0];
   }
 
   /**
-   * get table of last game day
+   * get table of last game day for given season
    */
-  private getTable(season: number = 2017) {
+  private getTable(season: number): void {
+
+    // is this a valid season 
+    if(this.seasons.find(s=>s == season) == undefined) {
+      this.error = "unknown season!";
+      return;
+    }
+
+    // get table for this season
     this.ligaService.getTable(season).subscribe(data => {
 
       this.teams = [];
 
-      // generate table from service data
+      // generate table elements
       for (const dat of data) {
-        let team: Team = dat;
+        let team: TeamInTable = dat;
         this.teams.push(team);
       }
 
-      // select first available element
-      if(this.selectedTeam == undefined && this.teams.length > 0)
-        this.selectedTeam = this.teams[0];
     },
     error => {
       this.error = error;
@@ -68,17 +66,33 @@ export class AppComponent implements OnInit {
   /**
    * act on season change
    */
-  public onSeasonChange() {
+  public onSeasonChange(): void {
     this.getTable(this.selectedSeason);
+    this.listOfGamesFromSelectedTeam = [];
   }
 
   /**
-   * act on team change
+   * on team change get all games of the season and extract all games from selected team
    */
-  public onTeamChange() {
-    let test = this.selectedTeam;
-  }
+  public onTeamChange(): void {
+    this.ligaService.getCompleteSeason(this.selectedSeason).subscribe(data => {
+      
+      this.listOfGamesFromSelectedTeam = [];
 
+      // generate table from service data
+      for (const dat of data) {
+        let match: Match = dat;
+        
+        // if one of the teams from the match is my selected team, add to list
+        if(match.Team1.TeamId == this.selectedTeam.TeamInfoId || match.Team2.TeamId == this.selectedTeam.TeamInfoId) 
+          this.listOfGamesFromSelectedTeam.push(match)
+      }
+
+    },
+    error => {
+      this.error = error;
+    });
+  }
 
 }
 

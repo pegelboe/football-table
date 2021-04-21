@@ -29,3 +29,19 @@ Team:
     <td style="text-align: center;">{{team.Points}}</td>
   </tr>
 </table>
+
+
+<table>
+  <tr>
+    <td>Tag</td>
+    <td>Paarung</td>
+    <td>HZ</td>
+    <td>End</td>
+  </tr>
+  <tr *ngFor="let match of listOfGamesFromSelectedTeam; index as i;">
+    <td>{{match.Group.GroupOrderID}}</td>
+    <td>{{match.Team1.TeamName}} ({{match.Team1.TeamId}}) - {{match.Team2.TeamName}} ({{match.Team2.TeamId}})</td>
+    <td>{{match.MatchResults[0].PointsTeam1}} - {{match.MatchResults[0].PointsTeam2}}</td>
+    <td>{{match.MatchResults[1].PointsTeam1}} - {{match.MatchResults[1].PointsTeam2}}</td>
+  </tr>
+</table>
