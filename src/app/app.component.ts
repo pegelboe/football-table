@@ -26,28 +26,9 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.getTable();
-
     this.getSeasons();
 
-  }
-
-
-  /**
-   * get table of last game day
-   */
-  private getTable(season: number = 2017) {
-    this.ligaService.getTable(2017).subscribe(data => {
-
-      for (const dat of data) {
-        let team: Team = dat;
-        this.teams.push(team);
-      }
-
-    },
-      error => {
-        this.error = error;
-      });
+    this.getTable(this.selectedSeason);
   }
 
   /**
@@ -55,7 +36,49 @@ export class AppComponent implements OnInit {
    */
    private getSeasons() {
     this.seasons = this.ligaService.getSeasons();
+
+    // select first available element
+    if(this.selectedSeason == undefined && this.seasons.length > 0)
+        this.selectedSeason = this.seasons[0];
   }
+
+  /**
+   * get table of last game day
+   */
+  private getTable(season: number = 2017) {
+    this.ligaService.getTable(season).subscribe(data => {
+
+      this.teams = [];
+
+      // generate table from service data
+      for (const dat of data) {
+        let team: Team = dat;
+        this.teams.push(team);
+      }
+
+      // select first available element
+      if(this.selectedTeam == undefined && this.teams.length > 0)
+        this.selectedTeam = this.teams[0];
+    },
+    error => {
+      this.error = error;
+    });
+  }
+
+  /**
+   * act on season change
+   */
+  public onSeasonChange() {
+    this.getTable(this.selectedSeason);
+  }
+
+  /**
+   * act on team change
+   */
+  public onTeamChange() {
+    let test = this.selectedTeam;
+  }
+
 
 }
 

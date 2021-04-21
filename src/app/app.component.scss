@@ -1,4 +1,16 @@
-tr.even {
+tr.two-wins {
     background-color: seagreen;
+}
+
+tr.win-draw {
+    background-color: palegreen;
+}
+
+tr.two-draws {
+    background-color: orange;
+}
+
+tr.looser {
+    background-color: red;
 }
 

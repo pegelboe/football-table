@@ -3,15 +3,17 @@
 <div style="color: red; font-weight: bold;">{{error}}</div>
 
 Saison:
-<select [(ngModel)]="selectedSeason">
+<select [(ngModel)]="selectedSeason" (change)="onSeasonChange()">
   <option *ngFor="let season of seasons" [ngValue]="season">{{season}}</option>
 </select>
 <br>
 
 Team:
-<select [(ngModel)]="selectedTeam">
+<select [(ngModel)]="selectedTeam" (change)="onTeamChange()">
   <option *ngFor="let team of teams" [ngValue]="team">{{team.TeamName}}</option>
 </select>
+
+(selected ID: {{selectedTeam?.TeamInfoId}})
 
 <table>
   <tr>
@@ -20,7 +22,7 @@ Team:
     <td>Goals</td>
     <td>Points</td>
   </tr>
-  <tr *ngFor="let team of teams; index as i;" class="even">
+  <tr *ngFor="let team of teams; index as i;" class="two-wins">
     <td style="text-align: center;">{{i+1}}</td>
     <td>{{team.TeamName}}</td>
     <td>{{team.Goals}} : {{team.OpponentGoals}}</td>
