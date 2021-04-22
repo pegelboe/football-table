@@ -1,16 +1,27 @@
-tr.two-wins {
+tr.points-6 {
+    background-color: green;
+}
+
+tr.points-4 {
     background-color: seagreen;
 }
 
-tr.win-draw {
-    background-color: palegreen;
+tr.points-3 {
+    background-color: yellowgreen;
 }
 
-tr.two-draws {
+tr.points-2 {
+    background-color: yellow;
+}
+
+tr.points-1 {
     background-color: orange;
 }
 
-tr.looser {
+tr.points-0 {
     background-color: red;
 }
 
+tr.myself {
+    background-color: gray;
+}

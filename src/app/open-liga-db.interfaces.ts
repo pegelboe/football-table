@@ -4,22 +4,24 @@ export interface TeamInTable {
     Goals: number;
     OpponentGoals: number;
     TeamInfoId: number;
+    PointsAgainstSelectedTeam: number;
   }
   
   export interface TeamInMatch {
     TeamId: number;
     TeamName: string;
   }
-  
+ 
   export interface MatchResult {
-    ResultOderId: number; // 1=Halftime; 2=Final
+    ResultOrderID: number; // 1=Halftime; 2=Final
     PointsTeam1: number;
     PointsTeam2: number;
   }
   
   export interface Match {
+    MatchId: number
     Group: {
-      GroupOrderID; // GameDay
+      GroupOrderID: number; // GameDay
     }
     MatchResults: MatchResult[];  // length=2
     Team1: TeamInMatch;

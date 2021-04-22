@@ -1,8 +1,14 @@
-<h1>Hello Open Liga DB</h1>
+<h1>Open Liga DB - API calls</h1>
+
+<ul>
+  <li>This page uses <a href="https://www.openligadb.de/" target="_blank">www.openligadb.de</a> to access Bundesliga date via an API</li>
+  <li>Select a season to see the final table of that Bundesliga season</li>
+  <li>Select a team, to see stats showing, how many points each team scored agains the selected team.</li>
+</ul>
 
 <div style="color: red; font-weight: bold;">{{error}}</div>
 
-Saison:
+Season:
 <select [(ngModel)]="selectedSeason" (change)="onSeasonChange()">
   <option *ngFor="let season of seasons" [ngValue]="season">{{season}}</option>
 </select>
@@ -10,38 +16,42 @@ Saison:
 
 Team:
 <select [(ngModel)]="selectedTeam" (change)="onTeamChange()">
-  <option *ngFor="let team of teams" [ngValue]="team">{{team.TeamName}}</option>
+  <option *ngFor="let team of teamsTable" [ngValue]="team">{{team.TeamName}}</option>
 </select>
-
 (selected ID: {{selectedTeam?.TeamInfoId}})
+
+<p></p>
 
 <table>
   <tr>
     <td>Pos</td>
-    <td>Name</td>
+    <td>Name (ID)</td>
     <td>Goals</td>
     <td>Points</td>
+    <td>Points gained</td>
   </tr>
-  <tr *ngFor="let team of teams; index as i;" class="two-wins">
+  <tr *ngFor="let team of teamsTable; index as i;" class="points-{{team.PointsAgainstSelectedTeam}} {{team.TeamInfoId==selectedTeam?.TeamInfoId?'myself':''}}">
     <td style="text-align: center;">{{i+1}}</td>
-    <td>{{team.TeamName}}</td>
+    <td>{{team.TeamName}} ({{team.TeamInfoId}})</td>
     <td>{{team.Goals}} : {{team.OpponentGoals}}</td>
     <td style="text-align: center;">{{team.Points}}</td>
+    <td style="text-align: center;">{{team.PointsAgainstSelectedTeam}}</td>
   </tr>
 </table>
 
+<p></p>
 
+All Matches of selected Team in this season:
 <table>
   <tr>
-    <td>Tag</td>
-    <td>Paarung</td>
-    <td>HZ</td>
-    <td>End</td>
+    <td>GameDay</td>
+    <td>Matchup</td>
+    <td>Final Score</td>
   </tr>
   <tr *ngFor="let match of listOfGamesFromSelectedTeam; index as i;">
     <td>{{match.Group.GroupOrderID}}</td>
     <td>{{match.Team1.TeamName}} ({{match.Team1.TeamId}}) - {{match.Team2.TeamName}} ({{match.Team2.TeamId}})</td>
-    <td>{{match.MatchResults[0].PointsTeam1}} - {{match.MatchResults[0].PointsTeam2}}</td>
-    <td>{{match.MatchResults[1].PointsTeam1}} - {{match.MatchResults[1].PointsTeam2}}</td>
+    <td *ngIf="match.MatchResults[0].ResultOrderID==2">{{match.MatchResults[0].PointsTeam1}} - {{match.MatchResults[0].PointsTeam2}}</td>
+    <td *ngIf="match.MatchResults[1].ResultOrderID==2">{{match.MatchResults[1].PointsTeam1}} - {{match.MatchResults[1].PointsTeam2}}</td>
   </tr>
 </table>
