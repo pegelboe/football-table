@@ -13,7 +13,8 @@ export class AppComponent implements OnInit {
   selectedTeam: TeamInTable = null;
   seasons: number[] = [];
   selectedSeason: number = null;
-  listOfGamesFromSelectedTeam: Match[] = [];
+  selectedSeasonMatches: Match[] = null;
+  listOfMatchesFromSelectedTeam: Match[] = [];
   error: string = "";
 
   constructor(private ligaService: OpenLigaDbService) {}
@@ -68,7 +69,8 @@ export class AppComponent implements OnInit {
    */
   public onSeasonChange(): void {
     this.getTable(this.selectedSeason);
-    this.listOfGamesFromSelectedTeam = [];
+    this.listOfMatchesFromSelectedTeam = [];
+    this.selectedSeasonMatches = undefined;
   }
 
   /**
@@ -78,56 +80,77 @@ export class AppComponent implements OnInit {
 
     this.cleanTable();
 
-    this.ligaService.getCompleteSeason(this.selectedSeason).subscribe(data => {
+    // get all season matches, if not alrady done
+    if(this.selectedSeasonMatches == undefined) {
+      this.ligaService.getCompleteSeason(this.selectedSeason).subscribe(data => {
+        this.selectedSeasonMatches = [];
+        for (const dat of data) {
+          let match: Match = dat;
+          this.selectedSeasonMatches.push(match);
+        }
+        this.getMatchesForSelectedTeam();
+      },
+      error => {
+        this.error = error;
+      });
+    }
+    else
+      this.getMatchesForSelectedTeam();
+
+  }
+
+  /**
+   * get all matches of selected season for selected team 
+   * and calculate points won against each other team of the league
+   */
+  private getMatchesForSelectedTeam() {
+    this.listOfMatchesFromSelectedTeam = [];
+    let pointsForMeInMatch: number = 0;
+    let myTeamIsAwayTeam: boolean = false;
+    this.error = "";
+
+    if(this.selectedSeasonMatches == undefined) {
+      this.error = "no mathes for season loaded!"; 
+      return
+    }
+
+    // generate table from service data
+    for (const match of this.selectedSeasonMatches) {
+      pointsForMeInMatch = 0;
       
-      this.listOfGamesFromSelectedTeam = [];
-      let pointsForMeInMatch: number = 0;
-      let myTeamIsAwayTeam: boolean = false;
-      this.error = "";
+      // not a match in which the selected team is? -> next
+      if(match.Team1.TeamId != this.selectedTeam.TeamInfoId && match.Team2.TeamId != this.selectedTeam.TeamInfoId)
+        continue;
 
-      // generate table from service data
-      for (const dat of data) {
-        let match: Match = dat;
-        pointsForMeInMatch = 0;
-        
-        // not a match in which the selected team is? -> next
-        if(match.Team1.TeamId != this.selectedTeam.TeamInfoId && match.Team2.TeamId != this.selectedTeam.TeamInfoId)
-          continue;
+      // match with selected team? add to list
+      this.listOfMatchesFromSelectedTeam.push(match)
 
-        // match with selected team? add to list
-        this.listOfGamesFromSelectedTeam.push(match)
+      // is the team we are looking for stats the home team?
+      if(match.Team2.TeamId == this.selectedTeam.TeamInfoId) 
+        myTeamIsAwayTeam = true;
+      else
+        myTeamIsAwayTeam = false;
 
-        // is the team we are looking for stats the home team?
-        if(match.Team2.TeamId == this.selectedTeam.TeamInfoId) 
-          myTeamIsAwayTeam = true;
-        else
-          myTeamIsAwayTeam = false;
-
-        let finalResult = match.MatchResults.find(mr => mr.ResultOrderID == 2);
-        // draw
-        if(finalResult.PointsTeam1 == finalResult.PointsTeam2)
-          pointsForMeInMatch = 1;
-        // home team wins and my team is the home team -> points for me
-        else if(finalResult.PointsTeam1 > finalResult.PointsTeam2 && !myTeamIsAwayTeam) 
-           pointsForMeInMatch = 3;
-        // away team wins and my team is the away team -> points for me
-        else if(finalResult.PointsTeam1 < finalResult.PointsTeam2 && myTeamIsAwayTeam) 
+      let finalResult = match.MatchResults.find(mr => mr.ResultOrderID == 2);
+      // draw
+      if(finalResult.PointsTeam1 == finalResult.PointsTeam2)
+        pointsForMeInMatch = 1;
+      // home team wins and my team is the home team -> points for me
+      else if(finalResult.PointsTeam1 > finalResult.PointsTeam2 && !myTeamIsAwayTeam) 
           pointsForMeInMatch = 3;
+      // away team wins and my team is the away team -> points for me
+      else if(finalResult.PointsTeam1 < finalResult.PointsTeam2 && myTeamIsAwayTeam) 
+        pointsForMeInMatch = 3;
 
-        // no points for me in this match :() => next
-        if(pointsForMeInMatch == 0)
-          continue;
+      // no points for me in this match :() => next
+      if(pointsForMeInMatch == 0)
+        continue;
 
-        // get the oponent from the table and add the points they got in this match
-        let opponentTeamId = myTeamIsAwayTeam ? match.Team1.TeamId : match.Team2.TeamId;
-        let opponent: TeamInTable = this.teamsTable.find(t => t.TeamInfoId == opponentTeamId);
-        opponent.PointsAgainstSelectedTeam += pointsForMeInMatch;
-      }
-
-    },
-    error => {
-      this.error = error;
-    });
+      // get the oponent from the table and add the points they got in this match
+      let opponentTeamId = myTeamIsAwayTeam ? match.Team1.TeamId : match.Team2.TeamId;
+      let opponent: TeamInTable = this.teamsTable.find(t => t.TeamInfoId == opponentTeamId);
+      opponent.PointsAgainstSelectedTeam += pointsForMeInMatch;
+    }
   }
 
   /**

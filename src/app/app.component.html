@@ -48,7 +48,7 @@ All Matches of selected Team in this season:
     <td>Matchup</td>
     <td>Final Score</td>
   </tr>
-  <tr *ngFor="let match of listOfGamesFromSelectedTeam; index as i;">
+  <tr *ngFor="let match of listOfMatchesFromSelectedTeam; index as i;">
     <td>{{match.Group.GroupOrderID}}</td>
     <td>{{match.Team1.TeamName}} ({{match.Team1.TeamId}}) - {{match.Team2.TeamName}} ({{match.Team2.TeamId}})</td>
     <td *ngIf="match.MatchResults[0].ResultOrderID==2">{{match.MatchResults[0].PointsTeam1}} - {{match.MatchResults[0].PointsTeam2}}</td>
