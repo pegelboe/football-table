@@ -76,26 +76,28 @@ export class AppComponent implements OnInit {
   /**
    * on team change get all games of the season and extract all games from selected team
    */
-  public onTeamChange(): void {
+  public async onTeamChange() {
 
     this.cleanTable();
 
     // get all season matches, if not alrady done
-    if(this.selectedSeasonMatches == undefined) {
-      this.ligaService.getCompleteSeason(this.selectedSeason).subscribe(data => {
-        this.selectedSeasonMatches = [];
-        for (const dat of data) {
-          let match: Match = dat;
-          this.selectedSeasonMatches.push(match);
-        }
-        this.getMatchesForSelectedTeam();
-      },
-      error => {
-        this.error = error;
-      });
+    if(this.selectedSeasonMatches == undefined) 
+      this.selectedSeasonMatches = await this.get();
+
+    this.getMatchesForSelectedTeam();
+
+  }
+
+  private async get() {
+    let data = await this.ligaService.getCompleteSeason(this.selectedSeason).toPromise();
+
+    this.selectedSeasonMatches = [];
+    let matches: Match[] = [];
+    for (const dat of data) {
+      let match: Match = dat;
+      matches.push(match);
     }
-    else
-      this.getMatchesForSelectedTeam();
+    return matches;
 
   }
 
