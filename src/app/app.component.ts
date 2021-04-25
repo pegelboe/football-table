@@ -13,7 +13,7 @@ export class AppComponent implements OnInit {
   selectedTeam: TeamInTable = null;
   seasons: number[] = [];
   selectedSeason: number = null;
-  selectedSeasonMatches: Match[] = null;
+  allMatchesOfSeason: Match[] = null;
   listOfMatchesFromSelectedTeam: Match[] = [];
   error: string = "";
 
@@ -28,7 +28,7 @@ export class AppComponent implements OnInit {
   /**
    * get all available seasons and select first one
    */
-   private getSeasons(): void {
+  private getSeasons(): void {
     this.seasons = this.ligaService.getSeasons();
 
     // select first available element
@@ -57,7 +57,6 @@ export class AppComponent implements OnInit {
         let team: TeamInTable = dat;
         this.teamsTable.push(team);
       }
-
     },
     error => {
       this.error = error;
@@ -70,54 +69,58 @@ export class AppComponent implements OnInit {
   public onSeasonChange(): void {
     this.getTable(this.selectedSeason);
     this.listOfMatchesFromSelectedTeam = [];
-    this.selectedSeasonMatches = undefined;
+    this.allMatchesOfSeason = undefined;
+    this.selectedTeam = undefined;
   }
 
   /**
-   * on team change get all games of the season and extract all games from selected team
+   * on team change get all matches of the team from all season-matches
    */
-  public async onTeamChange() {
+  public async onTeamChange(): Promise<void> {
 
     this.cleanTable();
 
-    // get all season matches, if not alrady done
-    if(this.selectedSeasonMatches == undefined) 
-      this.selectedSeasonMatches = await this.get();
+    // get all season matches, if not alrady present
+    if(this.allMatchesOfSeason == undefined) 
+      this.allMatchesOfSeason = await this.getAllMatchesOfSeason();
 
-    this.getMatchesForSelectedTeam();
-
+    this.showMatchesForSelectedTeam();
   }
 
-  private async get() {
+  /**
+   * Get all matches of the season
+   */
+  private async getAllMatchesOfSeason(): Promise<Match[]> {
     let data = await this.ligaService.getCompleteSeason(this.selectedSeason).toPromise();
 
-    this.selectedSeasonMatches = [];
+    this.allMatchesOfSeason = [];
     let matches: Match[] = [];
+
     for (const dat of data) {
       let match: Match = dat;
       matches.push(match);
     }
-    return matches;
 
+    return matches;
   }
 
   /**
    * get all matches of selected season for selected team 
    * and calculate points won against each other team of the league
    */
-  private getMatchesForSelectedTeam() {
+  private showMatchesForSelectedTeam(): void {
     this.listOfMatchesFromSelectedTeam = [];
     let pointsForMeInMatch: number = 0;
     let myTeamIsAwayTeam: boolean = false;
     this.error = "";
 
-    if(this.selectedSeasonMatches == undefined) {
+    if(this.allMatchesOfSeason == undefined) {
       this.error = "no mathes for season loaded!"; 
       return
     }
 
     // generate table from service data
-    for (const match of this.selectedSeasonMatches) {
+    for (const match of this.allMatchesOfSeason) {
       pointsForMeInMatch = 0;
       
       // not a match in which the selected team is? -> next
